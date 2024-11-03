@@ -50,3 +50,31 @@ Clone this repository to your system:
 
 3. Run the application on the terminal: `$ ./DeriBot`
    Depending on the system the correct syntax could be `$ DeriBot`, `$ ./DeriBot` or `$ .\DeriBot`.
+
+## Using the project:
+
+### Basic commands
+1. Type in `help` to see all the supported commands all at once.
+2. `quit` closes all existing websocket connections and exits the program.
+3. `show <id>` gets the metadata of the connection with the given id
+4. `send <id> msg` sends the message `msg` to the connection with the given id.
+
+### Accessing the Deribit API using DeriBot
+1. Create an account on the Deribit website and generate a set of API keys which contains a Client ID and a Client Secret.
+2. Run the DeriBot program and enter the command 
+   `connect wss://test.deribit.com/ws/api/v2` to connect to the Deribit testnet websocket server. You should get a message similar to:
+    `Created connection with id 0`.
+3. Enter the command `show 0` to ensure that the connection has been correctly created. In case you are making multiple connections, replace the `0` with the connection id. A proper connection should return the following:
+   ```
+   > URI: wss://test.deribit.com/ws/api/v2
+   > Status: Open
+   > Remote Server: nginx/1.25.5
+   > Error/close reason: N/A
+   > Messages Processed: (0)
+   ```
+4. To use the full functionality of the Deribit API, we need to authenticate using our user credentials. Enter the command 
+   `DERIBIT authorize <connection_id> <client_id> <client_secret>`
+   for authentication. You can find the values here:
+   ![](https://i.imgur.com/poRb5xD.png)
+   This returns a JSON object which contains an "Access Key" which can either be saved in the bot or can be manually input everytime. This key will be used to access the functionality of the API.
+
