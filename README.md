@@ -35,7 +35,7 @@ $ openssl version
 
 ### Build steps
 Clone this repository to your system: 
-`$ git clone https://github.com/ShuvraneelMitra/Order-Execution-Management-System-CPP.git`
+`$ git clone https://github.com/ShuvraneelMitra/DeriBot-CPP.git`
 1. Make a build directory inside the project folder and enter it:
    ```
    $ mkdir build
