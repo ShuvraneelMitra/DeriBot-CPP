@@ -15,16 +15,17 @@ std::string deribit_api::process(const std::string &input) {
     s >> cmd;
     
     if (cmd == "authorize") {
-        return authorize(cmd);
+        return authorize(input);
     }
     else{
-        return jsonrpc();
+        std::cout << "ERROR: Unrecognized command. Please enter 'help' to see available commands.\n";
+        return "";
     }
 }
 
-std::string deribit_api::authorize(const std::string &cmd) {
+std::string deribit_api::authorize(const std::string &input) {
 
-    std::istringstream s(cmd);
+    std::istringstream s(input);
     std::string auth;
     std::string id;
     std::string client_id;
@@ -42,7 +43,8 @@ std::string deribit_api::authorize(const std::string &cmd) {
                    {"client_id", client_id},
                    {"timestamp", tm},
                    {"signature", signature},
-                   {"nonce", nonce}
+                   {"nonce", nonce},
+                   {"scope", "connection"}
                    };
     return j.dump();
 }

@@ -276,7 +276,7 @@ int main(){
             << "> show <id>: Gets the metadata of the connection with the given id\n"
             << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
             << "DERIBIT API COMMANDS\n"
-            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token"
+            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\n"
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
@@ -328,7 +328,9 @@ int main(){
             ss >> cmd >> id;
             
             std::string msg = deribit_api::process(input);
-            endpoint.send(id, msg);
+            if (msg != ""){
+                endpoint.send(id, msg);
+            }
         }
         else{
             std::cout << "Unrecognized command" << std::endl;

@@ -1,4 +1,4 @@
 build/
+.vscode/
 test.cpp
 test.py
-.env
