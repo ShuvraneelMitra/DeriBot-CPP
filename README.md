@@ -1,6 +1,6 @@
 # **DERIBOT** : A simple order management and execution tool in C++
 
-DeriBot is a order management application which works through the command line interface. It uses a websocket client to connect to the [Deribit TESTNET website](https://test.deribit.com) and manage the user portfolio from there.
+DeriBot is an order management application which works through the command line interface. It uses a websocket client to connect to the [Deribit TESTNET website](https://test.deribit.com) and manage the user portfolio from there.
 
 ## Build instructions:
 
