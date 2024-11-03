@@ -1,0 +1,2 @@
+#define DeriBot_VERSION_MAJOR @DeriBot_VERSION_MAJOR@
+#define DeriBot_VERSION_MINOR @DeriBot_VERSION_MINOR@
