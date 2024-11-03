@@ -3,7 +3,10 @@
 #include <map>
 #include <string>
 #include <sstream>
+
 #include "DeriBotConfig.h"
+#include "deribit_api.h"
+#include "utils.h"
 
 #include <websocketpp/config/asio_client.hpp> 
 #include <boost/asio.hpp>
@@ -80,6 +83,7 @@ class connection_metadata {
             } else {
                 m_messages.push_back("RECEIVED: " + websocketpp::utility::to_hex(msg->get_payload()));
             }
+            std::cout << "Received message: " << utils::pretty(msg->get_payload()) << std::endl;
         }
 
         friend std::ostream &operator<< (std::ostream &out, connection_metadata const &data);
@@ -270,7 +274,9 @@ int main(){
             << "> connect <URI>: creates a connection with the given URI\n"
             << "> close <id> <code (optional)> <reason (optional)>: closes the connection with the given id with optionally specifiable exit_code and/or reason\n"
             << "> show <id>: Gets the metadata of the connection with the given id\n"
-            << "> send <id> <message>: Sends the message to the specified connection\n" 
+            << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
+            << "DERIBIT API COMMANDS\n"
+            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token"
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
@@ -313,6 +319,16 @@ int main(){
             std::getline(ss,message);
             
             endpoint.send(id, message);
+        }
+        else if (input.substr(0, 7) == "DERIBIT") {
+            int id; 
+            std::string cmd;
+
+            std::stringstream ss(input);
+            ss >> cmd >> id;
+            
+            std::string msg = deribit_api::process(input);
+            endpoint.send(id, msg);
         }
         else{
             std::cout << "Unrecognized command" << std::endl;

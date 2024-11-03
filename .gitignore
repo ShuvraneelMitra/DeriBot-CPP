@@ -1,1 +1,4 @@
 build/
+test.cpp
+test.py
+.env
