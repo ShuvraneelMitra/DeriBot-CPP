@@ -34,6 +34,8 @@ $ openssl version
 ```
 
 ### Build steps
+Clone this repository to your system: 
+`$ git clone https://github.com/ShuvraneelMitra/Order-Execution-Management-System-CPP.git`
 1. Make a build directory inside the project folder and enter it:
    ```
    $ mkdir build
@@ -48,4 +50,3 @@ $ openssl version
 
 3. Run the application on the terminal: `$ ./DeriBot`
    Depending on the system the correct syntax could be `$ DeriBot`, `$ ./DeriBot` or `$ .\DeriBot`.
-   
