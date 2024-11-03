@@ -7,7 +7,7 @@ DeriBot is a order management application which works through the command line i
 ### Prerequisites
 Ensure your system has a C++ compiler such as g++ installed.
 
-The project is uses CMake, so make sure that you have CMake installed:
+The project uses CMake, so make sure that you have CMake installed:
 1. For Mac users: `brew install cmake`
 2. For Linux users: `sudo apt install cmake` (or replace apt with your package manager, e.g., dnf for Fedora or yum for CentOS)
 3. For Windows users: Download from the official [CMake downloads](https://cmake.org/download/) page.
