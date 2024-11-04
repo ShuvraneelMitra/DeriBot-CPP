@@ -5,10 +5,16 @@
 
 #include <chrono>
 #include <time.h>
-#include <unistd.h>
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
 #include "json.hpp"
+
+#ifdef _WIN32
+#include <conio.h> 
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
 
 using json = nlohmann::json;
 
@@ -65,4 +71,40 @@ std::string utils::get_signature(long long timestamp, std::string nonce, std::st
 std::string utils::pretty(std::string j) {
     json serialised = json::parse(j);
     return serialised.dump(4);
+}
+
+std::string utils::getPassword() {
+    std::string password;
+    char ch;
+
+    std::cout << "Enter access key: ";
+
+    #ifdef _WIN32
+        while ((ch = _getch()) != '\r') { 
+            if (ch == '\b') {  
+                if (!password.empty()) {
+                    password.pop_back();
+                    std::cout << "\b \b";
+                }
+            } else {
+                password += ch;
+                std::cout << '*'; 
+            }
+        }
+        std::cout << std::endl;
+
+    #else
+        struct termios oldt, newt;
+        tcgetattr(STDIN_FILENO, &oldt); 
+        newt = oldt;
+        newt.c_lflag &= ~ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+        std::cin >> password;
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        std::cout << std::endl;
+    #endif
+
+    return password;
 }

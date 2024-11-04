@@ -22,4 +22,6 @@ namespace deribit_api {
     std::string process(const std::string &input);
 
     std::string authorize(const std::string &cmd);
+
+    std::string sell(const std::string &input);
 }

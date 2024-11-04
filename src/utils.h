@@ -15,4 +15,6 @@ namespace utils {
     std::string hmac_sha256(const std::string& key, const std::string& data);
 
     std::string pretty(std::string j);
+
+    std::string getPassword();
 }

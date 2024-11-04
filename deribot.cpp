@@ -83,7 +83,12 @@ class connection_metadata {
             } else {
                 m_messages.push_back("RECEIVED: " + websocketpp::utility::to_hex(msg->get_payload()));
             }
-            std::cout << "Received message: " << utils::pretty(msg->get_payload()) << std::endl;
+            if (msg->get_payload()[0] == '{') {
+                std::cout << "Received message: " << utils::pretty(msg->get_payload()) << std::endl;
+            }
+            else{
+                std::cout << "Received message: " << msg->get_payload() << std::endl;
+            }
         }
 
         friend std::ostream &operator<< (std::ostream &out, connection_metadata const &data);
