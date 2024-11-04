@@ -84,9 +84,10 @@ The application doubles up as a normal websocket client in addition to being abl
 
 ### Trading commands:
 1. `DERIBIT buy <id> <instrument> <transaction_name>` sends a buy order on the connection with id `<id>` for the instrument `<instrument>`. The program further prompts the user to enter certain information about the trade, as well as the access token for the session, to complete placing the order.
-   **Amount or contracts**: if you want to specify the amount, say x, then enter `amount x`. If you want to specify the amount in number of contracts bought, enter `contracts x`.
-   **Order Type**: Must be one of `limit`, `stop_limit`, `take_limit`, `market`, `stop_market`, `take_market`, `market_limit`, and `trailing_stop`.
+   <br>
+   **Amount or contracts**: if you want to specify the amount, say x, then enter `amount x`. If you want to specify the amount in number of contracts bought, enter `contracts x`.<br>
+   **Order Type**: Must be one of `limit`, `stop_limit`, `take_limit`, `market`, `stop_market`, `take_market`, `market_limit`, and `trailing_stop`.<br>
    **Time in force value**: Must be one of `good_til_cancelled`, `good_til_day`, `fill_or_kill`, or `immediate_or_cancel`.
-   
+
 2. `DERIBIT sell <id> <instrument> <transaction_name>` sends a sell order on the connection with id `<id>` for the instrument `<instrument>`. This has the same behaviour as `buy` except it sends a sell order.
 
