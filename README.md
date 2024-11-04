@@ -2,6 +2,12 @@
 
 DeriBot is an order management application which works through the command line interface. It uses a websocket client to connect to the [Deribit TESTNET website](https://test.deribit.com) and manage the user portfolio from there.
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Message-THIS%20REPOSITORY%20IS%20CURRENTLY%20UNDER%20CONSTRUCTION-red?style=for-the-badge" alt="Message" width="3000px">
+</p>
+
+
+
 ## Build instructions:
 
 ### Prerequisites
