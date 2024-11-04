@@ -1,13 +1,13 @@
 # **DERIBOT** : A simple order management and execution tool in C++
 
-DeriBot is a order management application which works through the command line interface. It uses a websocket client to connect to the [Deribit TESTNET website](https://test.deribit.com) and manage the user portfolio from there.
+DeriBot is an order management application which works through the command line interface. It uses a websocket client to connect to the [Deribit TESTNET website](https://test.deribit.com) and manage the user portfolio from there.
 
 ## Build instructions:
 
 ### Prerequisites
 Ensure your system has a C++ compiler such as g++ installed.
 
-The project is uses CMake, so make sure that you have CMake installed:
+The project uses CMake, so make sure that you have CMake installed:
 1. For Mac users: `brew install cmake`
 2. For Linux users: `sudo apt install cmake` (or replace apt with your package manager, e.g., dnf for Fedora or yum for CentOS)
 3. For Windows users: Download from the official [CMake downloads](https://cmake.org/download/) page.
