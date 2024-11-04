@@ -78,7 +78,7 @@ std::string deribit_api::sell(const std::string &input) {
     std::istringstream s(input);
     s >> sell >> id >> instrument >> label;
 
-    std::cout << "Enter the access key: ";
+    std::cout << "Enter the access token: ";
     std::cin >> access_key;
 
     std::cout << "\nEnter the amount or contracts: ";
@@ -153,7 +153,7 @@ std::string deribit_api::buy(const std::string &input) {
     std::istringstream s(input);
     s >> buy >> id >> instrument >> label;
 
-    std::cout << "Enter the access key: ";
+    std::cout << "Enter the access token: ";
     std::cin >> access_key;
 
     std::cout << "\nEnter the amount or contracts: ";

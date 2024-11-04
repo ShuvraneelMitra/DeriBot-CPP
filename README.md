@@ -54,7 +54,8 @@ Clone this repository to your system:
 ## Using the project:
 
 ### Basic commands
-1. Type in `help` to see all the supported commands all at once.
+The application doubles up as a normal websocket client in addition to being able to access the Deribit API:
+1. Type `help` to see all the supported commands all at once.
 2. `quit` closes all existing websocket connections and exits the program.
 3. `show <id>` gets the metadata of the connection with the given id
 4. `send <id> msg` sends the message `msg` to the connection with the given id.
@@ -64,6 +65,7 @@ Clone this repository to your system:
 2. Run the DeriBot program and enter the command 
    `connect wss://test.deribit.com/ws/api/v2` to connect to the Deribit testnet websocket server. You should get a message similar to:
     `Created connection with id 0`.
+    **NOTE:** A more compact alternative `DERIBIT connect` has now been added with the same behaviour.
 3. Enter the command `show 0` to ensure that the connection has been correctly created. In case you are making multiple connections, replace the `0` with the connection id. A proper connection should return the following:
    ```
    > URI: wss://test.deribit.com/ws/api/v2
@@ -77,4 +79,14 @@ Clone this repository to your system:
    for authentication. You can find the values here:
    ![](https://i.imgur.com/poRb5xD.png)
    This returns a JSON object which contains an "Access Key" which can either be saved in the bot or can be manually input everytime. This key will be used to access the functionality of the API.
+
+   Note that this authentication needs to be carried out in every session of the DeriBot since the application sets the default scope of authorization to "connection-level".
+
+### Trading commands:
+1. `DERIBIT buy <id> <instrument> <transaction_name>` sends a buy order on the connection with id `<id>` for the instrument `<instrument>`. The program further prompts the user to enter certain information about the trade, as well as the access token for the session, to complete placing the order.
+   **Amount or contracts**: if you want to specify the amount, say x, then enter `amount x`. If you want to specify the amount in number of contracts bought, enter `contracts x`.
+   **Order Type**: Must be one of `limit`, `stop_limit`, `take_limit`, `market`, `stop_market`, `take_market`, `market_limit`, and `trailing_stop`.
+   **Time in force value**: Must be one of `good_til_cancelled`, `good_til_day`, `fill_or_kill`, or `immediate_or_cancel`.
+   
+2. `DERIBIT sell <id> <instrument> <transaction_name>` sends a sell order on the connection with id `<id>` for the instrument `<instrument>`. This has the same behaviour as `buy` except it sends a sell order.
 

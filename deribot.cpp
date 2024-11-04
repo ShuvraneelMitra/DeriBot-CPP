@@ -296,7 +296,10 @@ int main(){
             << "> show <id>: Gets the metadata of the connection with the given id\n"
             << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
             << "DERIBIT API COMMANDS\n"
+            << "> DERIBIT connect: Directly connects to the Deribit testnet website\n"
             << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\n"
+            << "> DERIBIT buy <id> <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
+            << "> DERIBIT buy <id> <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
@@ -343,6 +346,13 @@ int main(){
             std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
             endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
             endpoint.get_metadata(id)->msg_processed = false;
+        }
+        else if (input == "DERIBIT connect") {
+            std::string uri = "wss://test.deribit.com/ws/api/v2";
+            int id = endpoint.connect(uri);
+            if (id != -1) {
+                std::cout << "> Created connection to DERIBIT TESTNET with id " << id << std::endl;
+            }
         }
         else if (input.substr(0, 7) == "DERIBIT") {
             int id; 
