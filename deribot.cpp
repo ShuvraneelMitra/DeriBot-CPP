@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <mutex>
+#include <condition_variable>
 
 #include "DeriBotConfig.h"
 #include "deribit_api.h"
@@ -34,13 +36,18 @@ class connection_metadata {
         typedef websocketpp::lib::shared_ptr<connection_metadata> ptr;
         typedef std::shared_ptr<boost::asio::ssl::context> context_ptr;
 
+        std::mutex mtx;
+        std::condition_variable cv;
+        bool msg_processed;
+
         connection_metadata(int id, websocketpp::connection_hdl hdl, std::string uri):
         m_id(id),
         m_hdl(hdl),
         m_status("Connecting"),
         m_uri(uri),
         m_server("N/A"),
-        m_messages({})
+        m_messages({}),
+        msg_processed(false)
         {}
 
         int get_id(){return m_id;}
@@ -83,14 +90,22 @@ class connection_metadata {
             } else {
                 m_messages.push_back("RECEIVED: " + websocketpp::utility::to_hex(msg->get_payload()));
             }
-            if (msg->get_payload()[0] == '{') {
-                std::cout << "Received message: " << utils::pretty(msg->get_payload()) << std::endl;
-            }
-            else{
-                std::cout << "Received message: " << msg->get_payload() << std::endl;
-            }
-        }
 
+            char show_msg;
+            std::cout << "Received message. Show message? Y/N ";
+            std::cin >> show_msg;
+            if(show_msg == 'y' | show_msg == 'Y'){
+                if (msg->get_payload()[0] == '{') {
+                    std::cout << "Received message: " << utils::pretty(msg->get_payload()) << std::endl;
+                }
+                else{
+                    std::cout << "Received message: " << msg->get_payload() << std::endl;
+                }
+            }
+            msg_processed = true;
+            cv.notify_one();
+        }
+        
         friend std::ostream &operator<< (std::ostream &out, connection_metadata const &data);
 };
 
@@ -267,7 +282,8 @@ int main(){
               
     while(!done) {
         std::cout << "Enter Command: ";
-        std::getline(std::cin, input);
+        while (std::getline(std::cin, input) && input.empty()) {}   
+        std::cout << "\nINPUT= " <<input <<std::endl;
 
         if(input == "quit"){
             done = true;
@@ -324,6 +340,10 @@ int main(){
             std::getline(ss,message);
             
             endpoint.send(id, message);
+
+            std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
+            endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
+            endpoint.get_metadata(id)->msg_processed = false;
         }
         else if (input.substr(0, 7) == "DERIBIT") {
             int id; 
@@ -336,6 +356,10 @@ int main(){
             if (msg != ""){
                 endpoint.send(id, msg);
             }
+
+            std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
+            endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
+            endpoint.get_metadata(id)->msg_processed = false;
         }
         else{
             std::cout << "Unrecognized command" << std::endl;

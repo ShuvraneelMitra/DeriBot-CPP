@@ -15,10 +15,10 @@ std::string deribit_api::process(const std::string &input) {
     s >> cmd;
     
     if (cmd == "authorize") {
-        return deribit_api::authorize(input);
+        return deribit_api::authorize(input.substr(8));
     }
     else if (cmd == "sell") {
-        return deribit_api::sell(input);
+        return deribit_api::sell(input.substr(8));
     }
     else{
         std::cout << "ERROR: Unrecognized command. Please enter 'help' to see available commands.\n";
@@ -27,7 +27,7 @@ std::string deribit_api::process(const std::string &input) {
 }
 
 std::string deribit_api::authorize(const std::string &input) {
-    std::cout << input;
+
     std::istringstream s(input);
     std::string auth;
     std::string id;
@@ -105,7 +105,7 @@ std::string deribit_api::sell(const std::string &input) {
         std::cin >> price;
     }
 
-    std::cout << "\nEnter the time-in-force value (default good_til_cancelled): ";
+    std::cout << "Enter the time-in-force value (default good_til_cancelled): ";
     std::cin >> frc;
     std::vector<std::string> permitted_tif = {"good_til_cancelled", "good_til_day", "fill_or_kill", "immediate_or_cancel"};
     if (!std::any_of(permitted_tif.begin(), permitted_tif.end(), [&](std::string val){ return val == frc; }))
