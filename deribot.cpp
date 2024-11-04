@@ -283,7 +283,6 @@ int main(){
     while(!done) {
         std::cout << "Enter Command: ";
         while (std::getline(std::cin, input) && input.empty()) {}   
-        std::cout << "\nINPUT= " <<input <<std::endl;
 
         if(input == "quit"){
             done = true;
