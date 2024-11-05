@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fmt/color.h>
 
 namespace utils {
 
@@ -17,4 +18,8 @@ namespace utils {
     std::string pretty(std::string j);
 
     std::string getPassword();
+
+    void printcmd(std::string const &str);
+    void printcmd(std::string const &str, int r, int g, int b);
+    void printerr(std::string const &str);
 }

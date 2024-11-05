@@ -20,6 +20,8 @@
 #include <websocketpp/common/thread.hpp>
 #include <websocketpp/common/memory.hpp>
 
+#include <fmt/color.h>
+
 typedef websocketpp::client<websocketpp::config::asio_tls_client> client;
 typedef std::shared_ptr<boost::asio::ssl::context> context_ptr;
 
@@ -93,7 +95,7 @@ class connection_metadata {
             }
 
             char show_msg;
-            std::cout << "Received message. Show message? Y/N ";
+            utils::printcmd("Received message. Show message? Y/N ", 57, 255, 20);
             std::cin >> show_msg;
             if(show_msg == 'y' | show_msg == 'Y'){
                 if (msg->get_payload()[0] == '{') {
@@ -106,6 +108,7 @@ class connection_metadata {
 
             if (AUTH_SENT) {
                 Password::password().setAccessToken(json::parse(msg->get_payload())["result"]["access_token"]);
+                utils::printcmd("Authorization successful!\n");
                 AUTH_SENT = false;
             }
             msg_processed = true;
@@ -282,12 +285,14 @@ int main(){
     std::string input;
     websocket_endpoint endpoint;
 
-    std::cout << "-------------------------- DERIBOT VERSION " << DeriBot_VERSION_MAJOR << "."
-              << DeriBot_VERSION_MINOR << " --------------------------\n" 
-              << "Type 'help' to check out all available commands\n" << std::endl;
+    fmt::print(fg(fmt::color::crimson) | fmt::emphasis::bold,
+            "-------------------------- DERIBOT VERSION {}.{} --------------------------\n", 
+            DeriBot_VERSION_MAJOR, DeriBot_VERSION_MINOR);
+    std::cout << "Type 'help' to check out all available commands\n" << std::endl;
               
     while(!done) {
-        std::cout << "Enter Command: ";
+        fmt::print(fg(fmt::color::cyan) | fmt::emphasis::italic,
+            "Enter command: ");
         while (std::getline(std::cin, input) && input.empty()) {}   
 
         if(input == "quit"){
@@ -303,9 +308,9 @@ int main(){
             << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
             << "DERIBIT API COMMANDS\n"
             << "> DERIBIT connect: Directly connects to the Deribit testnet website\n"
-            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\nAn optional flag -r can be "
+            << "> DERIBIT authorize <id> <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session"
             << "> DERIBIT buy <id> <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
-            << "> DERIBIT buy <id> <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
+            << "> DERIBIT sell <id> <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
