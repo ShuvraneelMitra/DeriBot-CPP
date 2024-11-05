@@ -84,7 +84,7 @@ The application doubles up as a normal websocket client in addition to being abl
    `DERIBIT authorize <connection_id> <client_id> <client_secret>`
    for authentication. You can find the values here:
    ![](https://i.imgur.com/poRb5xD.png)
-   This returns a JSON object which contains an "Access Key" which can either be saved in the bot or can be manually input everytime. This key will be used to access the functionality of the API.
+   This returns a JSON object which contains an "Access Token" which has to be manually input everytime. (at least for now). This key will be used to access the functionality of the API.
 
    Note that this authentication needs to be carried out in every session of the DeriBot since the application sets the default scope of authorization to "connection-level".
 
