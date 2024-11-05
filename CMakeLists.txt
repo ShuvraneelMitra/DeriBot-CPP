@@ -18,9 +18,10 @@ FetchContent_MakeAvailable(websocketpp)
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(OpenSSL REQUIRED)
 
-add_executable(DeriBot deribot.cpp
+add_executable(DeriBot src/password.cpp
                        src/deribit_api.cpp
-                       src/utils.cpp)
+                       src/utils.cpp
+                       deribot.cpp)
 
 target_include_directories(DeriBot PRIVATE ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR} ${websocketpp_SOURCE_DIR})
 target_include_directories(DeriBot PUBLIC

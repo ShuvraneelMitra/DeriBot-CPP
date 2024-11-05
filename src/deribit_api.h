@@ -5,6 +5,7 @@
 #include <string>
 
 using json = nlohmann::json;
+extern bool AUTH_SENT;
 
 class jsonrpc : public json {
     public:

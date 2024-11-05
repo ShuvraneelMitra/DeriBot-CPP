@@ -9,6 +9,7 @@
 #include "DeriBotConfig.h"
 #include "deribit_api.h"
 #include "utils.h"
+#include "password.h"
 
 #include <websocketpp/config/asio_client.hpp> 
 #include <boost/asio.hpp>
@@ -101,6 +102,11 @@ class connection_metadata {
                 else{
                     std::cout << "Received message: " << msg->get_payload() << std::endl;
                 }
+            }
+
+            if (AUTH_SENT) {
+                Password::password().setAccessToken(json::parse(msg->get_payload())["result"]["access_token"]);
+                AUTH_SENT = false;
             }
             msg_processed = true;
             cv.notify_one();
@@ -297,7 +303,7 @@ int main(){
             << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
             << "DERIBIT API COMMANDS\n"
             << "> DERIBIT connect: Directly connects to the Deribit testnet website\n"
-            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\n"
+            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\nAn optional flag -r can be "
             << "> DERIBIT buy <id> <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT buy <id> <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
             << std::endl;
@@ -364,11 +370,10 @@ int main(){
             std::string msg = deribit_api::process(input);
             if (msg != ""){
                 endpoint.send(id, msg);
+                std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
+                endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
+                endpoint.get_metadata(id)->msg_processed = false;
             }
-
-            std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
-            endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
-            endpoint.get_metadata(id)->msg_processed = false;
         }
         else{
             std::cout << "Unrecognized command" << std::endl;

@@ -1,12 +1,14 @@
 #include "deribit_api.h"
 #include "utils.h"
 #include "json.hpp"
+#include "password.h"
 
 #include <iostream>
 #include <string>
 #include <sstream>
 
 using json = nlohmann::json;
+bool AUTH_SENT = false;
 
 std::string deribit_api::process(const std::string &input) {
 
@@ -39,14 +41,7 @@ std::string deribit_api::authorize(const std::string &input) {
     std::string secret;
     long long tm = utils::time_now();
 
-    if (input[19] == '-'){
-        //Flag is present
-        s >> auth >> flag >> id >> client_id >> secret;
-    }
-    else{
-        s >> auth >> id >> client_id >> secret;
-    }
-
+    s >> auth >> id >> client_id >> secret >> flag;
     std::string nonce = utils::gen_random(10);
     std::string signature = utils::get_signature(tm, nonce, "", secret);
 
@@ -59,6 +54,7 @@ std::string deribit_api::authorize(const std::string &input) {
                    {"nonce", nonce},
                    {"scope", "connection"}
                    };
+    if (flag == "-r" && j.dump() != "") AUTH_SENT = true;
     return j.dump();
 }
 
@@ -78,8 +74,13 @@ std::string deribit_api::sell(const std::string &input) {
     std::istringstream s(input);
     s >> sell >> id >> instrument >> label;
 
-    std::cout << "Enter the access token: ";
-    std::cin >> access_key;
+    if (Password::password().getAccessToken() == "") {
+        std::cout << "Enter the access token: ";
+        std::cin >> access_key;
+    }
+    else {
+        access_key = Password::password().getAccessToken();
+    }
 
     std::cout << "\nEnter the amount or contracts: ";
     std::cin >> cmd;
@@ -109,8 +110,7 @@ std::string deribit_api::sell(const std::string &input) {
     }
 
     std::cout << "Enter the time-in-force value (default good_til_cancelled): ";
-    std::getline(std::cin, frc);
-    if (frc == "\n") { frc = "good_til_cancelled"; }
+    std::cin >> frc;
 
     std::vector<std::string> permitted_tif = {"good_til_cancelled", "good_til_day", "fill_or_kill", "immediate_or_cancel"};
     if (!std::any_of(permitted_tif.begin(), permitted_tif.end(), [&](std::string val){ return val == frc; }))
@@ -153,8 +153,13 @@ std::string deribit_api::buy(const std::string &input) {
     std::istringstream s(input);
     s >> buy >> id >> instrument >> label;
 
-    std::cout << "Enter the access token: ";
-    std::cin >> access_key;
+    if (Password::password().getAccessToken() == "") {
+        std::cout << "Enter the access token: ";
+        std::cin >> access_key;
+    }
+    else {
+        access_key = Password::password().getAccessToken();
+    }
 
     std::cout << "\nEnter the amount or contracts: ";
     std::cin >> cmd;
@@ -184,10 +189,9 @@ std::string deribit_api::buy(const std::string &input) {
     }
 
     std::cout << "Enter the time-in-force value (default good_til_cancelled): ";
-    std::getline(std::cin, frc);
-    if (frc == "\n") { frc = "good_til_cancelled"; }
+    std::cin >> frc;
 
-    std::vector<std::string> permitted_tif = {"", "good_til_cancelled", "good_til_day", "fill_or_kill", "immediate_or_cancel"};
+    std::vector<std::string> permitted_tif = {"good_til_cancelled", "good_til_day", "fill_or_kill", "immediate_or_cancel"};
     if (!std::any_of(permitted_tif.begin(), permitted_tif.end(), [&](std::string val){ return val == frc; }))
     {
         std::cout << "\nIncorrect syntax; couldn't place order\nTime-in-force value can be only one of \ngood_til_cancelled\ngood_til_day\nfill_or_kill\nimmediate_or_cancel\n";

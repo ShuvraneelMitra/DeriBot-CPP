@@ -84,8 +84,8 @@ The application doubles up as a normal websocket client in addition to being abl
    `DERIBIT authorize <connection_id> <client_id> <client_secret>`
    for authentication. You can find the values here:
    ![](https://i.imgur.com/poRb5xD.png)
-   This returns a JSON object which contains an "Access Key" which can either be saved in the bot or can be manually input everytime. This key will be used to access the functionality of the API.
-
+   This returns a JSON object which contains an "Access Key" which can either be saved in the bot or can be manually input everytime. This key will be used to access the functionality of the API. <br>
+   You can use a flag `-r` at the end of the command if you want the application to store your access_token automatically for the entire duration of the session. If this flag is absent, you will be prompted to enter the access_token everytime you use a `private` API method (i.e. one which requires connecting to your account).<br> 
    Note that this authentication needs to be carried out in every session of the DeriBot since the application sets the default scope of authorization to "connection-level".
 
 ### Trading commands:
