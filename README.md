@@ -7,7 +7,7 @@ DeriBot is an order management application which works through the command line 
 </p>
 
 <p align="center">
-  <img src="https://i.imgur.com/CgVxwNf.png" alt="Message" width="3000px">
+  <img src="https://i.imgur.com/CgVxwNf.png" alt="Message" width="1000px">
 </p>
 
 ## Build instructions:
