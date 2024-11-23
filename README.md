@@ -65,8 +65,9 @@ Clone this repository to your system:
 The application doubles up as a normal websocket client in addition to being able to access the Deribit API:
 1. Type `help` to see all the supported commands all at once.
 2. `quit` closes all existing websocket connections and exits the program.
-3. `show <id>` gets the metadata of the connection with the given id
+3. `show <id>` gets the metadata of the connection with the given id.
 4. `send <id> msg` sends the message `msg` to the connection with the given id.
+5. `show_messages <id>` allows you to view all the messages exchanged between your client and the server on the mentioned connection.
 
 ### Accessing the Deribit API using DeriBot
 1. Create an account on the Deribit website and generate a set of API keys which contains a Client ID and a Client Secret.
