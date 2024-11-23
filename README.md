@@ -59,7 +59,7 @@ Clone this repository to your system:
 3. Run the application on the terminal: `$ ./DeriBot`
    Depending on the system the correct syntax could be `$ DeriBot`, `$ ./DeriBot` or `$ .\DeriBot`.
 
-## Using the project:
+## Using the project via Command-Line:
 
 ### Basic commands
 The application doubles up as a normal websocket client in addition to being able to access the Deribit API:
@@ -99,3 +99,4 @@ The application doubles up as a normal websocket client in addition to being abl
 
 2. `DERIBIT sell <id> <instrument> <transaction_name>` sends a sell order on the connection with id `<id>` for the instrument `<instrument>`. This has the same behaviour as `buy` except it sends a sell order.
 
+**NOTE** If you want to further customise your trades, you can always whip up your own JSON object based on the Deribit API and use the `websocket_endpoint.send()` command.
