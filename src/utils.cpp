@@ -85,6 +85,16 @@ std::string utils::pretty(std::string j) {
     return serialised.dump(4);
 }
 
+std::string utils::printmap(std::map<std::string, std::string> mpp) {
+    std::ostringstream os;
+
+    for (const auto& pair : mpp) {
+        os << pair.first << " : " << pair.second << '\n'; // Format: Key : Value
+    }
+
+    return os.str();
+}
+
 std::string utils::getPassword() {
     std::string password;
     char ch;

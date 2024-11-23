@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fmt/color.h>
+#include <map>
 
 namespace utils {
 
@@ -16,6 +17,8 @@ namespace utils {
     std::string hmac_sha256(const std::string& key, const std::string& data);
 
     std::string pretty(std::string j);
+
+    std::string printmap(std::map<std::string , std::string> mpp);
 
     std::string getPassword();
 

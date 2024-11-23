@@ -33,7 +33,7 @@ class connection_metadata {
         std::string m_uri;
         std::string m_server;
         std::string m_error_reason;
-        std::vector<std::string> m_messages;
+        std::vector<std::string> m_summaries;
 
     public:
         typedef websocketpp::lib::shared_ptr<connection_metadata> ptr;
@@ -41,7 +41,8 @@ class connection_metadata {
 
         std::mutex mtx;
         std::condition_variable cv;
-        bool msg_processed;
+        std::vector<std::string> m_messages;
+        bool MSG_PROCESSED;
 
         connection_metadata(int id, websocketpp::connection_hdl hdl, std::string uri):
         m_id(id),
@@ -50,16 +51,71 @@ class connection_metadata {
         m_uri(uri),
         m_server("N/A"),
         m_messages({}),
-        msg_processed(false)
+        m_summaries({}),
+        MSG_PROCESSED(false)
         {}
 
         int get_id(){return m_id;}
         websocketpp::connection_hdl get_hdl(){ return m_hdl;}
         std::string get_status(){return m_status;}
-        void record_sent_message(std::string message) {
+        void record_sent_message(std::string const &message) {
             m_messages.push_back("SENT: " + message);
         }
         
+        void record_summary(std::string const &message, std::string const &sent){
+            if (message == "") return;
+            json parsed_msg = json::parse(message);
+            std::string cmd = parsed_msg.contains("method")? parsed_msg["method"] : "received";
+            std::map<std::string, std::string> summary;
+            
+            std::map<std::string, std::function<std::map<std::string, std::string>(json)>> action_map = 
+            {
+                {"public/auth", [](json parsed_msg){ 
+                                                    std::map<std::string, std::string> summary;
+                                                    summary["method"] = parsed_msg["method"];
+                                                    summary["grant_type"] = parsed_msg["params"]["grant_type"];
+                                                    return summary;
+                                                 }
+                },
+                {"private/sell", [](json parsed_msg){
+                                                    std::map<std::string, std::string> summary = {};
+                                                    summary["id"] = std::to_string(parsed_msg["id"].get<int>());
+                                                    summary["method"] = parsed_msg["method"];
+                                                    summary["instrument_name"] = parsed_msg["params"]["instrument_name"];
+                                                    summary["amount"] = std::to_string(parsed_msg["params"]["amount"].get<int>());
+                                                    return summary;
+                                                 }                   
+                },
+                {"private/buy", [](json parsed_msg){
+                                                    std::map<std::string, std::string> summary = {};
+                                                    summary["id"] = std::to_string(parsed_msg["id"].get<int>());
+                                                    summary["method"] = parsed_msg["method"];
+                                                    summary["instrument_name"] = parsed_msg["params"]["instrument_name"];
+                                                    summary["amount"] = std::to_string(parsed_msg["params"]["amount"].get<int>());
+                                                    return summary;
+                                                 }                   
+                },
+                {"received", [](json parsed_msg){
+                                                    std::map<std::string, std::string> summary = {};
+                                                    if (parsed_msg.contains("result"))
+                                                        summary = {{"result", parsed_msg["result"].dump()}};
+                                                    else if (parsed_msg.contains("error"))
+                                                        summary = {{"error message", parsed_msg["error"].dump()}};
+                                                    return summary;
+                                                 }
+                }
+            };
+            
+            auto find = action_map.find(cmd);
+            if (find == action_map.end()) {
+                summary["id"] = std::to_string(parsed_msg["id"].get<int>());
+            }
+            else {
+                summary = find->second(parsed_msg);
+            }
+            m_summaries.push_back(sent + " : \n" + utils::printmap(summary));
+        }
+
         void on_open(client * c, websocketpp::connection_hdl hdl){
             m_status = "Open";
 
@@ -90,8 +146,10 @@ class connection_metadata {
         void on_message(websocketpp::connection_hdl hdl, client::message_ptr msg) {
             if (msg->get_opcode() == websocketpp::frame::opcode::text) {
                 m_messages.push_back("RECEIVED: " + msg->get_payload());
+                record_summary(msg->get_payload(), "RECEIVED");
             } else {
                 m_messages.push_back("RECEIVED: " + websocketpp::utility::to_hex(msg->get_payload()));
+                record_summary(websocketpp::utility::to_hex(msg->get_payload()), "RECEIVED");
             }
 
             char show_msg;
@@ -111,7 +169,7 @@ class connection_metadata {
                 utils::printcmd("Authorization successful!\n");
                 AUTH_SENT = false;
             }
-            msg_processed = true;
+            MSG_PROCESSED = true;
             cv.notify_one();
         }
         
@@ -126,7 +184,7 @@ std::ostream &operator<< (std::ostream &out, connection_metadata const &data){
         << "> Messages Processed: (" << data.m_messages.size() << ") \n";
  
         std::vector<std::string>::const_iterator it;
-        for (it = data.m_messages.begin(); it != data.m_messages.end(); ++it) {
+        for (it = data.m_summaries.begin(); it != data.m_summaries.end(); ++it) {
             out << *it << "\n";
         }
     return out;
@@ -277,6 +335,7 @@ class websocket_endpoint {
             }
             
             metadata_it->second->record_sent_message(message);
+            metadata_it->second->record_summary(message, "SENT");
             return id;
         }
 };
@@ -296,17 +355,18 @@ int main(){
             "Enter command: ");
         while (std::getline(std::cin, input) && input.empty()) {}   
 
-        if(input == "quit"){
+        if(input == "quit" || input == "exit"){
             done = true;
         } 
         else if(input == "help"){
             std::cout << "\nCOMMAND LIST:\n"
             << "> help: Displays this help text\n"
-            << "> quit: exits the program\n"
+            << "> quit / exit: exits the program\n"
             << "> connect <URI>: creates a connection with the given URI\n"
             << "> close <id> <code (optional)> <reason (optional)>: closes the connection with the given id with optionally specifiable exit_code and/or reason\n"
             << "> show <id>: Gets the metadata of the connection with the given id\n"
-            << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
+            << "> showfull <id>: Gets the complete messages sent and received on the connection with the given id\n"
+            << "> send <id> <message>: Sends the message to the specified connection\n\n"
             << "DERIBIT API COMMANDS\n"
             << "> DERIBIT connect: Directly connects to the Deribit testnet website\n"
             << "> DERIBIT authorize <id> <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session\n"
@@ -320,12 +380,21 @@ int main(){
                 std::cout << "> Created connection with id " << id << std::endl;
             }
         } 
+        else if (input.substr(0,13) == "show_messages") {
+            int id = atoi(input.substr(9).c_str());
+ 
+            connection_metadata::ptr metadata = endpoint.get_metadata(id);
+            std::vector<std::string>::const_iterator it;
+            for (it = metadata->m_messages.begin(); it != metadata->m_messages.end(); ++it) {
+                std::cout << *it << "\n\n";
+            }
+        }
         else if (input.substr(0,4) == "show") {
             int id = atoi(input.substr(5).c_str());
  
             connection_metadata::ptr metadata = endpoint.get_metadata(id);
             if (metadata) {
-                std::cout << *metadata << std::endl << std::endl;
+                std::cout << *metadata << std::endl;
             } else {
                 std::cout << "> Unknown connection id " << id << std::endl;
             }
@@ -356,8 +425,8 @@ int main(){
             endpoint.send(id, message);
 
             std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
-            endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
-            endpoint.get_metadata(id)->msg_processed = false;
+            endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->MSG_PROCESSED;});
+            endpoint.get_metadata(id)->MSG_PROCESSED = false;
         }
         else if (input == "DERIBIT connect") {
             std::string uri = "wss://test.deribit.com/ws/api/v2";
@@ -378,8 +447,8 @@ int main(){
                 int success = endpoint.send(id, msg);
                 if (success >= 0){
                 std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
-                endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
-                endpoint.get_metadata(id)->msg_processed = false;
+                endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->MSG_PROCESSED;});
+                endpoint.get_metadata(id)->MSG_PROCESSED = false;
                 }
             }
         }
