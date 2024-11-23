@@ -2,14 +2,11 @@
 #include <string>
 #include "password.h"
 
-Password *Password::pwd = nullptr;
 int Password::num_sets = 0;  
 
 Password &Password::password() {
-    if (!pwd) {
-        pwd = new Password();
-    }
-    return *(pwd);
+    static Password pwd;
+    return pwd;
 }
 
 void Password::setAccessToken(const std::string& token) {

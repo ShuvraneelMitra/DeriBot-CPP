@@ -12,23 +12,23 @@ bool AUTH_SENT = false;
 
 std::string deribit_api::process(const std::string &input) {
 
+    std::map<std::string, std::function<std::string(std::string)>> action_map = 
+    {
+        {"authorize", deribit_api::authorize},
+        {"sell", deribit_api::sell},
+        {"buy", deribit_api::buy}
+    };
+
     std::istringstream s(input.substr(8));
     std::string cmd;
     s >> cmd;
-    
-    if (cmd == "authorize") {
-        return deribit_api::authorize(input.substr(8));
-    }
-    else if (cmd == "sell") {
-        return deribit_api::sell(input.substr(8));
-    }
-    else if (cmd == "buy") {
-        return deribit_api::buy(input.substr(8));
-    }
-    else{
+
+    auto find = action_map.find(cmd);
+    if (find == action_map.end()) {
         utils::printerr("ERROR: Unrecognized command. Please enter 'help' to see available commands.\n");
         return "";
     }
+    return find->second(input.substr(8));
 }
 
 std::string deribit_api::authorize(const std::string &input) {
@@ -43,14 +43,18 @@ std::string deribit_api::authorize(const std::string &input) {
 
     s >> auth >> id >> client_id >> secret >> flag;
     std::string nonce = utils::gen_random(10);
-    std::string signature = utils::get_signature(tm, nonce, "", secret);
 
     jsonrpc j;
     j["method"] = "public/auth";
-    j["params"] = {{"grant_type", "client_signature"}, 
+    j["params"] = {{"grant_type", "client_credentials"}, 
+    /* 
+    NOTE: Changing 'grant_type' to client_signature may help in improving security,
+    but will need to use the already provided function utils::get_signature()
+    which might invite complexity and errors.
+    */
                    {"client_id", client_id},
+                   {"client_secret", secret},
                    {"timestamp", tm},
-                   {"signature", signature},
                    {"nonce", nonce},
                    {"scope", "connection"}
                    };

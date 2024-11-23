@@ -75,7 +75,7 @@ std::string utils::hmac_sha256(const std::string& key, const std::string& data) 
 }
 
 std::string utils::get_signature(long long timestamp, std::string nonce, std::string data, std::string clientsecret){
-
+    // Can be used if the 'grant_type' is "client_signature" to get the SHA256 encoded signature
     std::string string_to_code = std::to_string(timestamp) + "\n" + nonce + "\n" + data;
     return utils::hmac_sha256(clientsecret, string_to_code);
 }

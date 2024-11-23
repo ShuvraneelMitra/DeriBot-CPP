@@ -6,7 +6,6 @@
 class Password {
 
     private:
-        static Password* pwd;
         static int num_sets;
         std::string access_token;
         

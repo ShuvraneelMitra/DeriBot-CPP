@@ -260,23 +260,24 @@ class websocket_endpoint {
             std::cout << "Connection closed with reason: " << reason << std::endl;
         }
 
-        void send(int id, std::string message) {
+        int send(int id, std::string message) {
             websocketpp::lib::error_code ec;
         
             con_list::iterator metadata_it = m_connection_list.find(id);
 
             if (metadata_it == m_connection_list.end()) {
                 std::cout << "> No connection found with id " << id << std::endl;
-                return;
+                return -1;
             }
             
             m_endpoint.send(metadata_it->second->get_hdl(), message, websocketpp::frame::opcode::text, ec);
             if (ec) {
                 std::cout << "> Error sending message: " << ec.message() << std::endl;
-                return;
+                return -1;
             }
             
             metadata_it->second->record_sent_message(message);
+            return id;
         }
 };
 
@@ -308,7 +309,7 @@ int main(){
             << "> send <id> <message>: Sends the message to the specified connection\n" << std::endl 
             << "DERIBIT API COMMANDS\n"
             << "> DERIBIT connect: Directly connects to the Deribit testnet website\n"
-            << "> DERIBIT authorize <id> <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session"
+            << "> DERIBIT authorize <id> <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session\n"
             << "> DERIBIT buy <id> <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT sell <id> <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
             << std::endl;
@@ -324,7 +325,7 @@ int main(){
  
             connection_metadata::ptr metadata = endpoint.get_metadata(id);
             if (metadata) {
-                std::cout << *metadata << std::endl;
+                std::cout << *metadata << std::endl << std::endl;
             } else {
                 std::cout << "> Unknown connection id " << id << std::endl;
             }
@@ -374,10 +375,12 @@ int main(){
             
             std::string msg = deribit_api::process(input);
             if (msg != ""){
-                endpoint.send(id, msg);
+                int success = endpoint.send(id, msg);
+                if (success >= 0){
                 std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
                 endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->msg_processed;});
                 endpoint.get_metadata(id)->msg_processed = false;
+                }
             }
         }
         else{
