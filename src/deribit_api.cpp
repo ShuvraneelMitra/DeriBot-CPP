@@ -6,9 +6,14 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 using json = nlohmann::json;
 bool AUTH_SENT = false;
+std::vector<std::string> SUPPORTED_CURRENCIES = {"BTC", "ETH", "SOL", "XRP", "MATIC",
+                                                "USDC", "USDT", "JPY", "CAD", "AUD", "GBP", 
+                                                "EUR", "USD", "CHF", "BRL", "MXN", "COP", 
+                                                "CLP", "PEN", "ECS", "ARS"};
 
 std::string deribit_api::process(const std::string &input) {
 
@@ -16,12 +21,14 @@ std::string deribit_api::process(const std::string &input) {
     {
         {"authorize", deribit_api::authorize},
         {"sell", deribit_api::sell},
-        {"buy", deribit_api::buy}
+        {"buy", deribit_api::buy},
+        {"get_open_orders", deribit_api::get_open_orders}
     };
 
     std::istringstream s(input.substr(8));
+    int id;
     std::string cmd;
-    s >> cmd;
+    s >> id >> cmd;
 
     auto find = action_map.find(cmd);
     if (find == action_map.end()) {
@@ -41,7 +48,7 @@ std::string deribit_api::authorize(const std::string &input) {
     std::string secret;
     long long tm = utils::time_now();
 
-    s >> auth >> id >> client_id >> secret >> flag;
+    s >> id >> auth >> client_id >> secret >> flag;
     std::string nonce = utils::gen_random(10);
 
     jsonrpc j;
@@ -56,7 +63,7 @@ std::string deribit_api::authorize(const std::string &input) {
                    {"client_secret", secret},
                    {"timestamp", tm},
                    {"nonce", nonce},
-                   {"scope", "connection"}
+                   {"scope", "session:name"}
                    };
     if (flag == "-r" && j.dump() != "") AUTH_SENT = true;
     return j.dump();
@@ -76,7 +83,7 @@ std::string deribit_api::sell(const std::string &input) {
     int price{0};
 
     std::istringstream s(input);
-    s >> sell >> id >> instrument >> label;
+    s >> id >> sell >> instrument >> label;
 
     if (Password::password().getAccessToken() == "") {
         utils::printcmd("Enter the access token: ");
@@ -155,7 +162,7 @@ std::string deribit_api::buy(const std::string &input) {
     int price{0};
 
     std::istringstream s(input);
-    s >> buy >> id >> instrument >> label;
+    s >> id >> buy >> instrument >> label;
 
     if (Password::password().getAccessToken() == "") {
         utils::printcmd("Enter the access token: ");
@@ -217,5 +224,36 @@ std::string deribit_api::buy(const std::string &input) {
     j["params"]["label"] = label;
     j["params"]["time_in_force"] = frc;
 
+    return j.dump();
+}
+
+std::string deribit_api::get_open_orders(const std::string &input) {
+    std::istringstream is(input);
+
+    int id;
+    std::string cmd;
+    std::string opt1;
+    std::string opt2;
+    std::string method;
+    is >> id >> cmd >> opt1 >> opt2;
+
+    jsonrpc j;
+
+    if (opt1 == "") {
+        j["method"] = "private/get_open_orders";
+    }
+    else if (std::find(SUPPORTED_CURRENCIES.begin(), SUPPORTED_CURRENCIES.end(), opt1) == SUPPORTED_CURRENCIES.end()) {
+        j["method"] = "private/get_open_orders_by_instrument";
+        j["params"] = {{"instrument", opt1}};
+    }
+    else if ( opt2 == "" ) {
+        j["method"] = "private/get_open_orders_by_currency";
+        j["params"] = {{"currency", opt1}};
+    }
+    else {
+        j["method"] = "private/get_open_orders_by_label";
+        j["params"] = {{"currency", opt1},
+                        {"label", opt2}};
+    }
     return j.dump();
 }

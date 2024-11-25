@@ -3,9 +3,11 @@
 #include "json.hpp"
 #include <iostream>
 #include <string>
+#include <vector>
 
 using json = nlohmann::json;
 extern bool AUTH_SENT;
+extern std::vector<std::string> SUPPORTED_CURRENCIES;
 
 class jsonrpc : public json {
     public:
@@ -27,4 +29,6 @@ namespace deribit_api {
     std::string sell(const std::string &input);
 
     std::string buy(const std::string &input);
+
+    std::string get_open_orders(const std::string &input);
 }

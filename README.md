@@ -84,7 +84,7 @@ The application doubles up as a normal websocket client in addition to being abl
    > Messages Processed: (0)
    ```
 4. To use the full functionality of the Deribit API, we need to authenticate using our user credentials. Enter the command 
-   `DERIBIT authorize <connection_id> <client_id> <client_secret>`
+   `DERIBIT authorize <connection_id> <client_id> <client_secret> -r(optional)`
    for authentication. You can find the values here:
    ![](https://i.imgur.com/poRb5xD.png)
    This returns a JSON object which contains an "Access Key" which can either be saved in the bot or can be manually input everytime. This key will be used to access the functionality of the API. <br>
@@ -92,12 +92,14 @@ The application doubles up as a normal websocket client in addition to being abl
    Note that this authentication needs to be carried out in every session of the DeriBot since the application sets the default scope of authorization to "connection-level".
 
 ### Trading commands:
-1. `DERIBIT buy <id> <instrument> <transaction_name>` sends a buy order on the connection with id `<id>` for the instrument `<instrument>`. The program further prompts the user to enter certain information about the trade, as well as the access token for the session, to complete placing the order.
+1. `DERIBIT <id> buy <instrument> <transaction_name>` sends a buy order on the connection with id `<id>` for the instrument `<instrument>`. The program further prompts the user to enter certain information about the trade, as well as the access token for the session, to complete placing the order.
    <br>
    **Amount or contracts**: if you want to specify the amount, say x, then enter `amount x`. If you want to specify the amount in number of contracts bought, enter `contracts x`.<br>
    **Order Type**: Must be one of `limit`, `stop_limit`, `take_limit`, `market`, `stop_market`, `take_market`, `market_limit`, and `trailing_stop`.<br>
    **Time in force value**: Must be one of `good_til_cancelled`, `good_til_day`, `fill_or_kill`, or `immediate_or_cancel`.
 
-2. `DERIBIT sell <id> <instrument> <transaction_name>` sends a sell order on the connection with id `<id>` for the instrument `<instrument>`. This has the same behaviour as `buy` except it sends a sell order.
-
+2. `DERIBIT <id> sell <instrument> <transaction_name>` sends a sell order on the connection with id `<id>` for the instrument `<instrument>`. This has the same behaviour as `buy` except it sends a sell order.
 **NOTE** If you want to further customise your trades, you can always whip up your own JSON object based on the Deribit API and use the `websocket_endpoint.send()` command.
+
+3. `DERIBIT <id> get_open_orders` gets all the open orders on the account of this connection. The command can be further specialised as `DERIBIT get_open_orders <currency>`, `DERIBIT get_open_orders <instrument>` and `DERIBIT get_open_orders <currency> <label>`.
+**NOTE** To use this command you will have to modify your API key scope to have `trade:read` or `read_write`.
