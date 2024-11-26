@@ -109,6 +109,7 @@ class connection_metadata {
             auto find = action_map.find(cmd);
             if (find == action_map.end()) {
                 summary["id"] = std::to_string(parsed_msg["id"].get<int>());
+                if (sent == "SENT") summary["method"] = parsed_msg["method"];
             }
             else {
                 summary = find->second(parsed_msg);
@@ -365,13 +366,14 @@ int main(){
             << "> connect <URI>: creates a connection with the given URI\n"
             << "> close <id> <code (optional)> <reason (optional)>: closes the connection with the given id with optionally specifiable exit_code and/or reason\n"
             << "> show <id>: Gets the metadata of the connection with the given id\n"
-            << "> showfull <id>: Gets the complete messages sent and received on the connection with the given id\n"
+            << "> show_messages <id>: Gets the complete messages sent and received on the connection with the given id\n"
             << "> send <id> <message>: Sends the message to the specified connection\n\n"
             << "DERIBIT API COMMANDS\n"
-            << "> DERIBIT connect: Directly connects to the Deribit testnet website\n"
-            << "> DERIBIT authorize <id> <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session\n"
-            << "> DERIBIT buy <id> <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
-            << "> DERIBIT sell <id> <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
+            << "> DERIBIT connect: Creates a new connection to the Deribit testnet website\n"
+            << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session\n"
+            << "> DERIBIT <id> buy <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
+            << "> DERIBIT <id> sell <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
+            << "> DERIBIT <id> get_open_orders {options}: Gets all the open orders "
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
