@@ -362,7 +362,7 @@ int main(){
     fmt::print(fg(fmt::color::crimson) | fmt::emphasis::bold,
             "-------------------------- DERIBOT VERSION {}.{} --------------------------\n", 
             DeriBot_VERSION_MAJOR, DeriBot_VERSION_MINOR);
-    std::cout << "Type 'help' to check out all available commands\n" << std::endl;
+    std::cout << "Type 'help' to check out all available commands\nType 'sub' to go into the subscription server" << std::endl;
               
     while(!done) {
         fmt::print(fg(fmt::color::cyan) | fmt::emphasis::italic,
