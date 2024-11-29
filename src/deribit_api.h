@@ -41,4 +41,8 @@ namespace deribit_api {
     std::string get_open_orders(const std::string &input);
 
     std::string modify(const std::string &input);
+
+    std::string cancel(const std::string &input);
+
+    std::string cancel_all(const std::string &input);
 }

@@ -105,3 +105,4 @@ The application doubles up as a normal websocket client in addition to being abl
 **NOTE** To use this command you will have to modify your API key scope to have `trade:read` or `read_write`.
 
 4. `DERIBIT <id> modify <order_id>` allows you to modify the order with the given order ID. The order ID can be gotten either by noting it down from the received message while placing the order, or later can be retrieved using the `get_open_orders` command.
+5. `DERIBIT <id> cancel <order_id>` allows you to cancel a specific order while `DERIBIT <id> cancel_all <options>` allows you to cancel all orders with the given specification of instrument or currency. Specifying no options in `cancel_all` cancels all possible open orders.

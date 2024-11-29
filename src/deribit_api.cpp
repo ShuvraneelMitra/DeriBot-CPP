@@ -23,7 +23,8 @@ std::string deribit_api::process(const std::string &input) {
         {"sell", deribit_api::sell},
         {"buy", deribit_api::buy},
         {"get_open_orders", deribit_api::get_open_orders},
-        {"modify", deribit_api::modify}
+        {"modify", deribit_api::modify},
+        {"cancel", deribit_api::cancel}
     };
 
     std::istringstream s(input.substr(8));
@@ -280,5 +281,52 @@ std::string deribit_api::modify(const std::string &input) {
     if (amount >= 0) j["params"]["amount"] = amount;
     if (price >= 0) j["params"]["price"] = price;
 
+    return j.dump();
+}
+
+std::string deribit_api::cancel(const std::string &input) {
+    std::istringstream iss;
+    int id;
+    std::string cmd;
+    std::string ord_id;
+
+    iss >> id >> cmd >> ord_id;
+    if (ord_id == "") { 
+        utils::printerr("Order ID cannot be blank. If you want to cancel all orders, use cancel_all instead.");
+    }
+
+    jsonrpc j("private/cancel");
+
+    j["params"]["order_id"] = ord_id;
+    return j.dump();
+}
+
+std::string deribit_api::cancel_all(const std::string &input) {
+    std::istringstream iss;
+    int id;
+    std::string cmd;
+    std::string option;
+    std::string label;
+
+    jsonrpc j;
+    j["params"] = {};
+
+    iss >> id >> cmd >> option >> label;
+    if (option == "") { 
+        j["method"] = "private/cancel_all";
+    }
+    else if (std::find(SUPPORTED_CURRENCIES.begin(), SUPPORTED_CURRENCIES.end(), option) == SUPPORTED_CURRENCIES.end()) {
+        j["method"] = "private/cancel_all_by_instrument";
+        j["params"]["instrument"] = option;
+    }
+    else if (option == "-r") {
+        j["method"] = "private/cancel_by_label";
+        j["params"]["label"] = label;
+    }
+    else { 
+        j["method"] = "private/cancel_all_by_currency";
+        j["params"]["currency"] = option;
+    }
+    
     return j.dump();
 }

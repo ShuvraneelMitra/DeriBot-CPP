@@ -101,6 +101,13 @@ class connection_metadata {
                                                     return summary;
                                                  }                   
                 },
+                {"private/cancel", [](json parsed_msg){
+                                                        std::map<std::string, std::string> summary = {};
+                                                        summary["method"] = parsed_msg["method"];
+                                                        summary["id"] = parsed_msg["order_id"];
+                                                        return summary;
+                                                      }
+                },
                 {"received", [](json parsed_msg){
                                                     std::map<std::string, std::string> summary = {};
                                                     if (parsed_msg.contains("result"))
@@ -381,6 +388,7 @@ int main(){
             << "> DERIBIT <id> sell <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT <id> get_open_orders {options}: Gets all the open orders\n"
             << "> DERIBIT <id> modify <order_id>: Allows you to modify the price and amount of an active order with known order id"
+            << "> DERIBIT <id> cancel <order_id>: Allows you to cancel a specific order"
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
