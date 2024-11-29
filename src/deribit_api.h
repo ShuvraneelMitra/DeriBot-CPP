@@ -15,7 +15,15 @@ class jsonrpc : public json {
             (*this)["jsonrpc"] = "2.0",
 
             srand( time(NULL) );
-            int number = rand();
+            long number = rand();
+            (*this)["id"] = number;
+        }
+        
+        jsonrpc(const std::string& method){
+            (*this)["jsonrpc"] = "2.0",
+            (*this)["method"] = method;
+            srand( time(NULL) );
+            long number = rand();
             (*this)["id"] = number;
         }
 };
@@ -31,4 +39,6 @@ namespace deribit_api {
     std::string buy(const std::string &input);
 
     std::string get_open_orders(const std::string &input);
+
+    std::string modify(const std::string &input);
 }

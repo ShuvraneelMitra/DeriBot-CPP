@@ -22,7 +22,8 @@ std::string deribit_api::process(const std::string &input) {
         {"authorize", deribit_api::authorize},
         {"sell", deribit_api::sell},
         {"buy", deribit_api::buy},
-        {"get_open_orders", deribit_api::get_open_orders}
+        {"get_open_orders", deribit_api::get_open_orders},
+        {"modify", deribit_api::modify}
     };
 
     std::istringstream s(input.substr(8));
@@ -130,9 +131,8 @@ std::string deribit_api::sell(const std::string &input) {
         return "";
     } 
 
-    jsonrpc j;
+    jsonrpc j("private/sell");
     
-    j["method"] = "private/sell";
     j["params"] = {{"instrument_name", instrument},
                    {"access_token", access_key}};
     if (amount) { 
@@ -198,10 +198,10 @@ std::string deribit_api::buy(const std::string &input) {
         utils::printcmd("\nEnter the price at which you want to sell: ");
         std::cin >> price;
     }
-
+    
     utils::printcmd("Enter the time-in-force value: ");
     std::cin >> frc;
-
+    
     std::vector<std::string> permitted_tif = {"good_til_cancelled", "good_til_day", "fill_or_kill", "immediate_or_cancel"};
     if (!std::any_of(permitted_tif.begin(), permitted_tif.end(), [&](std::string val){ return val == frc; }))
     {
@@ -209,9 +209,8 @@ std::string deribit_api::buy(const std::string &input) {
         return "";
     } 
 
-    jsonrpc j;
-    
-    j["method"] = "private/buy";
+    jsonrpc j("private/buy");
+
     j["params"] = {{"instrument_name", instrument},
                    {"access_token", access_key}};
     if (amount) { 
@@ -234,7 +233,6 @@ std::string deribit_api::get_open_orders(const std::string &input) {
     std::string cmd;
     std::string opt1;
     std::string opt2;
-    std::string method;
     is >> id >> cmd >> opt1 >> opt2;
 
     jsonrpc j;
@@ -255,5 +253,32 @@ std::string deribit_api::get_open_orders(const std::string &input) {
         j["params"] = {{"currency", opt1},
                         {"label", opt2}};
     }
+    return j.dump();
+}
+
+std::string deribit_api::modify(const std::string &input) {
+    std::istringstream is;
+
+    int id;
+    std::string cmd;
+    std::string ord_id;
+    is >> id >> cmd >> ord_id;
+
+    jsonrpc j;
+    j["method"] = "private/edit";
+
+    int amount;
+    int price;
+
+    std::cout << "Enter -1 to keep the below parameters the same\n";
+    utils::printcmd("Enter the new price of the instrument at which you want to trade: ");
+    std::cin >> price;
+    utils::printcmd("Enter the new amount you'd like to trade: ");
+    std::cin >> amount;
+
+    j["params"] = {{"order_id", ord_id}};
+    if (amount >= 0) j["params"]["amount"] = amount;
+    if (price >= 0) j["params"]["price"] = price;
+
     return j.dump();
 }

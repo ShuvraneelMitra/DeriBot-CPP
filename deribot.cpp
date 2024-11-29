@@ -82,7 +82,10 @@ class connection_metadata {
                                                     summary["id"] = std::to_string(parsed_msg["id"].get<int>());
                                                     summary["method"] = parsed_msg["method"];
                                                     summary["instrument_name"] = parsed_msg["params"]["instrument_name"];
-                                                    summary["amount"] = std::to_string(parsed_msg["params"]["amount"].get<int>());
+                                                    if (parsed_msg["params"].contains("amount"))
+                                                        summary["amount"] = std::to_string(parsed_msg["params"]["amount"].get<int>());
+                                                    if (parsed_msg["params"].contains("contracts"))
+                                                        summary["contracts"] = std::to_string(parsed_msg["params"]["contracts"].get<int>());
                                                     return summary;
                                                  }                   
                 },
@@ -91,7 +94,10 @@ class connection_metadata {
                                                     summary["id"] = std::to_string(parsed_msg["id"].get<int>());
                                                     summary["method"] = parsed_msg["method"];
                                                     summary["instrument_name"] = parsed_msg["params"]["instrument_name"];
-                                                    summary["amount"] = std::to_string(parsed_msg["params"]["amount"].get<int>());
+                                                    if (parsed_msg["params"].contains("amount"))
+                                                        summary["amount"] = std::to_string(parsed_msg["params"]["amount"].get<int>());
+                                                    if (parsed_msg["params"].contains("contracts"))
+                                                        summary["contracts"] = std::to_string(parsed_msg["params"]["contracts"].get<int>());
                                                     return summary;
                                                  }                   
                 },
@@ -373,13 +379,15 @@ int main(){
             << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session\n"
             << "> DERIBIT <id> buy <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT <id> sell <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
-            << "> DERIBIT <id> get_open_orders {options}: Gets all the open orders "
+            << "> DERIBIT <id> get_open_orders {options}: Gets all the open orders\n"
+            << "> DERIBIT <id> modify <order_id>: Allows you to modify the price and amount of an active order with known order id"
             << std::endl;
         }
         else if (input.substr(0,7) == "connect") {
             int id = endpoint.connect(input.substr(8));
             if (id != -1) {
                 std::cout << "> Created connection with id " << id << std::endl;
+                std::cout << "> Status: " << endpoint.get_metadata(id)->get_status() << std::endl;
             }
         } 
         else if (input.substr(0,13) == "show_messages") {
@@ -435,6 +443,7 @@ int main(){
             int id = endpoint.connect(uri);
             if (id != -1) {
                 std::cout << "> Created connection to DERIBIT TESTNET with id " << id << std::endl;
+                std::cout << "> Status: " << endpoint.get_metadata(id)->get_status() << std::endl;
             }
         }
         else if (input.substr(0, 7) == "DERIBIT") {
