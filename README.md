@@ -103,3 +103,5 @@ The application doubles up as a normal websocket client in addition to being abl
 
 3. `DERIBIT <id> get_open_orders` gets all the open orders on the account of this connection. The command can be further specialised as `DERIBIT get_open_orders <currency>`, `DERIBIT get_open_orders <instrument>` and `DERIBIT get_open_orders <currency> <label>`.
 **NOTE** To use this command you will have to modify your API key scope to have `trade:read` or `read_write`.
+
+4. `DERIBIT <id> modify <order_id>` allows you to modify the order with the given order ID. The order ID can be gotten either by noting it down from the received message while placing the order, or later can be retrieved using the `get_open_orders` command.
