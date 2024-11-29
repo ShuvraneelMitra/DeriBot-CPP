@@ -25,4 +25,5 @@ namespace utils {
     void printcmd(std::string const &str);
     void printcmd(std::string const &str, int r, int g, int b);
     void printerr(std::string const &str);
+    void printsub(std::string const &str);
 }

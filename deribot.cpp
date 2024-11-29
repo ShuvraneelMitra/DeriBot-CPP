@@ -187,6 +187,16 @@ class connection_metadata {
             cv.notify_one();
         }
         
+        void on_sub_msg(websocketpp::connection_hdl hdl, client::message_ptr msg) {
+            if (msg->get_opcode() == websocketpp::frame::opcode::text) {
+                fmt::print(fg(fmt::rgb(255, 136, 0)) | fmt::emphasis::bold, "NOTIFICATION: ");
+                utils::printsub(msg->get_payload());
+            } else {
+                fmt::print(fg(fmt::rgb(255, 136, 0)) | fmt::emphasis::bold, "NOTIFICATION: ");
+                utils::printsub(websocketpp::utility::to_hex(msg->get_payload()));
+            }
+        }
+
         friend std::ostream &operator<< (std::ostream &out, connection_metadata const &data);
 };
 
@@ -219,7 +229,7 @@ context_ptr on_tls_init() {
 }
 
 class websocket_endpoint {
-    private:
+    protected:
         typedef std::map<int,connection_metadata::ptr> con_list;
 
         client m_endpoint;
@@ -354,15 +364,71 @@ class websocket_endpoint {
         }
 };
 
+class subscription_manager : public websocket_endpoint {
+    public:
+        int id;
+
+        int connect (std::string const &uri) {
+
+            int new_id = m_next_id++;
+
+            m_endpoint.set_tls_init_handler(websocketpp::lib::bind(
+                                            &on_tls_init
+                                            ));
+
+            websocketpp::lib::error_code ec;
+            client::connection_ptr con = m_endpoint.get_connection(uri, ec);
+
+            if(ec){
+                std::cout << "Connection initialization error: " << ec.message() << std::endl;
+                return -1;
+            }
+
+            connection_metadata::ptr metadata_ptr(new connection_metadata(new_id, con->get_handle(), uri));
+            m_connection_list[new_id] = metadata_ptr;
+
+            con->set_open_handler(websocketpp::lib::bind(
+                                  &connection_metadata::on_open,
+                                  metadata_ptr,
+                                  &m_endpoint,
+                                  websocketpp::lib::placeholders::_1
+                                  ));
+
+            con->set_fail_handler(websocketpp::lib::bind(
+                                  &connection_metadata::on_fail,
+                                  metadata_ptr,
+                                  &m_endpoint,
+                                  websocketpp::lib::placeholders::_1
+                                  ));
+            con->set_close_handler(websocketpp::lib::bind(
+                                   &connection_metadata::on_close,
+                                   metadata_ptr,
+                                   &m_endpoint,
+                                   websocketpp::lib::placeholders::_1
+                                  ));
+            con->set_message_handler(websocketpp::lib::bind(
+                                     &connection_metadata::on_sub_msg,
+                                     metadata_ptr,
+                                     websocketpp::lib::placeholders::_1,
+                                     websocketpp::lib::placeholders::_2
+                                    ));
+
+            m_endpoint.connect(con);
+    
+            return new_id;
+        }
+};
+
 int main(){
     bool done = false;
     std::string input;
     websocket_endpoint endpoint;
+    subscription_manager submngr;
 
     fmt::print(fg(fmt::color::crimson) | fmt::emphasis::bold,
             "-------------------------- DERIBOT VERSION {}.{} --------------------------\n", 
             DeriBot_VERSION_MAJOR, DeriBot_VERSION_MINOR);
-    std::cout << "Type 'help' to check out all available commands\nType 'sub' to go into the subscription server" << std::endl;
+    std::cout << "Type 'help' to check out all available commands\nType 'SM' to go into the subscription server" << std::endl;
               
     while(!done) {
         fmt::print(fg(fmt::color::cyan) | fmt::emphasis::italic,
@@ -375,6 +441,8 @@ int main(){
         else if(input == "help"){
             std::cout << "\nCOMMAND LIST:\n"
             << "> help: Displays this help text\n"
+            << "> SM: Starts the subscription server"
+            << "> qsub / esub: exits the subscription server"
             << "> quit / exit: exits the program\n"
             << "> connect <URI>: creates a connection with the given URI\n"
             << "> close <id> <code (optional)> <reason (optional)>: closes the connection with the given id with optionally specifiable exit_code and/or reason\n"
@@ -383,6 +451,8 @@ int main(){
             << "> send <id> <message>: Sends the message to the specified connection\n\n"
             << "DERIBIT API COMMANDS\n"
             << "> DERIBIT connect: Creates a new connection to the Deribit testnet website\n"
+            << "> DERIBIT sub <ch1 ch2 ...>: Subscribes on the server to updates of a channel"
+            << "> DERIBIT unsub <ch1 ch2 ...>: Unsubscribes from updates of a channel"
             << "> DERIBIT <id> authorize <client_id> <client_secret>: sends the authorization message to retrieve the access token\n\tAn optional flag -r can be set to remember the access_token for the rest of the session\n"
             << "> DERIBIT <id> buy <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT <id> sell <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
@@ -470,6 +540,49 @@ int main(){
                 endpoint.get_metadata(id)->MSG_PROCESSED = false;
                 }
             }
+        }
+        else if (input == "SM") {
+            std::string uri = "wss://test.deribit.com/ws/api/v2";
+            submngr.id = submngr.connect(uri);
+            if (submngr.id >= 0) {
+                std::cout << "> Connected to subscription manager with id " << submngr.id << std::endl;
+                std::cout << "> Status: " << submngr.get_metadata(submngr.id)->get_status() << std::endl;
+            }
+        }
+        else if (input.substr(0, 3) == "sub") {
+            std::string channels = input.substr(4);
+
+            nlohmann::json channelsJSON = nlohmann::json::array();
+            std::istringstream stream(channels);
+            std::string ch;
+            while (stream >> ch) {
+                channelsJSON.push_back(ch); 
+            }
+
+            jsonrpc j("private/subscribe");
+
+            j["params"]["channels"] = channelsJSON;
+            submngr.send(submngr.id, j.dump());
+        } 
+        else if (input.substr(0, 5) == "unsub") {
+            std::string channels = input.substr(6);
+
+            nlohmann::json channelsJSON = nlohmann::json::array();
+            std::istringstream stream(channels);
+            std::string ch;
+            while (stream >> ch) {
+                channelsJSON.push_back(ch); 
+            }
+
+            jsonrpc j("private/unsubscribe");
+
+            j["params"]["channels"] = channelsJSON;
+            submngr.send(submngr.id, j.dump());
+        } 
+        else if (input == "qsub") {
+            int close_code = websocketpp::close::status::normal;
+            submngr.close(submngr.id, close_code, "Quitting Subscription Manager");
+            utils::printsub("Quit Subscription Manager!\n");
         }
         else{
             std::cout << "Unrecognized command" << std::endl;

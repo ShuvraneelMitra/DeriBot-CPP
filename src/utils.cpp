@@ -30,6 +30,10 @@ void utils::printerr(std::string const &str){
     fmt::print(fg(fmt::rgb(255, 83, 29)) | fmt::emphasis::bold, str);
 }
 
+void utils::printsub(std::string const& str){
+    fmt::print(fg(fmt::rgb(255, 193, 94)) | fmt::emphasis::italic, str);
+}
+
 long long utils::time_now(){
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
