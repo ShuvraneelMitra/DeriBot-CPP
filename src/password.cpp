@@ -18,7 +18,7 @@ void Password::setAccessToken(const std::string& token) {
     num_sets++;
 }
 
-void Password::setAccessToken(int& token) {
+void Password::setAccessToken(const int& token) {
     if(num_sets > 1) {
         std::cout << "WARNING: Access token can only be set once per session" << std::endl;
         return;

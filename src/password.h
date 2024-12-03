@@ -18,7 +18,7 @@ class Password {
         void operator=(const Password&) = delete;
 
         void setAccessToken(const std::string& token);
-        void setAccessToken(int& token);
+        void setAccessToken(const int& token);
 
         std::string getAccessToken() const;
 };
