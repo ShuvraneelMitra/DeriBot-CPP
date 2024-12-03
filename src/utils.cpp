@@ -31,7 +31,7 @@ void utils::printerr(std::string const &str){
 }
 
 void utils::printsub(std::string const& str){
-    fmt::print(fg(fmt::rgb(255, 193, 94)) | fmt::emphasis::italic, str);
+    std::cout << str << std::endl;
 }
 
 long long utils::time_now(){

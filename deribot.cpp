@@ -441,7 +441,9 @@ int main(){
         else if(input == "help"){
             std::cout << "\nCOMMAND LIST:\n"
             << "> help: Displays this help text\n"
-            << "> SM: Starts the subscription server"
+            << "> SM: Starts the subscription server\n"
+            << "> SM <id> authorize <client_id> <client_secret>: sends the authorization message\n"
+            << "> subinstr <instrument> allows you to subscribe to a symbol and get notifications for orderbook changes for that symbol\n"
             << "> qsub / esub: exits the subscription server"
             << "> quit / exit: exits the program\n"
             << "> connect <URI>: creates a connection with the given URI\n"
@@ -549,6 +551,22 @@ int main(){
                 std::cout << "> Status: " << submngr.get_metadata(submngr.id)->get_status() << std::endl;
             }
         }
+        else if (input.substr(0, 2) == "SM") {
+            int id; 
+            std::string auth;
+
+            std::stringstream ss(input);
+            ss >> id >> auth;
+            std::string msg = deribit_api::authorize(input.substr(3));
+            if (msg != ""){
+                int success = endpoint.send(id, msg);
+                if (success >= 0){
+                std::unique_lock<std::mutex> lock(endpoint.get_metadata(id)->mtx);
+                endpoint.get_metadata(id)->cv.wait(lock, [&] { return endpoint.get_metadata(id)->MSG_PROCESSED;});
+                endpoint.get_metadata(id)->MSG_PROCESSED = false;
+                }
+            }
+        }
         else if (input.substr(0, 3) == "sub") {
             std::string channels = input.substr(4);
 
@@ -564,6 +582,23 @@ int main(){
             j["params"]["channels"] = channelsJSON;
             submngr.send(submngr.id, j.dump());
         } 
+        else if (input.substr(0, 7) == "subinstr") {
+            std::string subinstr;
+            std::string instrument;
+            std::string group = "none";
+            std::string depth = "1";
+            std::string interval;
+
+            std::istringstream iss(input);
+            iss >> subinstr >> instrument;
+
+            utils::printcmd("Enter the time intervals in which you'd like to get notified: ");
+            std::cin >> interval;
+            jsonrpc j("private/subscribe");
+
+            j["params"]["channels"] = json::array({instrument + "." + group + "." + depth + "." + interval});
+            submngr.send(submngr.id, j.dump());
+        }
         else if (input.substr(0, 5) == "unsub") {
             std::string channels = input.substr(6);
 
@@ -579,7 +614,7 @@ int main(){
             j["params"]["channels"] = channelsJSON;
             submngr.send(submngr.id, j.dump());
         } 
-        else if (input == "qsub") {
+        else if (input == "qsub" || input == "esub") {
             int close_code = websocketpp::close::status::normal;
             submngr.close(submngr.id, close_code, "Quitting Subscription Manager");
             utils::printsub("Quit Subscription Manager!\n");
