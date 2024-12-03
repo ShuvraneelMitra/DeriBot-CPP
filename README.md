@@ -10,6 +10,21 @@ DeriBot is an order management application which works through the command line 
   <img src="https://i.imgur.com/CgVxwNf.png" alt="Message" width="500px">
 </p>
 
+## FEATURES:
+#### Market coverage
+- Instruments: Spot, Futures, and Options 
+- Scope: All supported symbols
+  
+This is automatically supported since the Deribit API doesn't require different API calls for different types of smbols, just the name is enough.
+
+#### Order Management Functions 
+1. Place order 
+2. Cancel order 
+3. Modify order 
+4. Get orderbook 
+5. View current positions 
+6. Real-time market data streaming for subscribed symbols 
+  
 ## Build instructions:
 
 ### Prerequisites
