@@ -387,6 +387,7 @@ int main(){
             << "> DERIBIT <id> buy <instrument> <comments>: Sends a buy order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT <id> sell <instrument> <comments>: Sends a sell order via the connection with id <id> for the instrument specified\n"
             << "> DERIBIT <id> get_open_orders {options}: Gets all the open orders\n"
+            << "> DERIBIT <id> get_order_history {options}: Gets the order history\n"
             << "> DERIBIT <id> modify <order_id>: Allows you to modify the price and amount of an active order with known order id"
             << "> DERIBIT <id> cancel <order_id>: Allows you to cancel a specific order"
             << std::endl;
