@@ -263,7 +263,7 @@ std::string deribit_api::get_history(const std::string &input) {
     
     int id;
     std::string cmd;
-    std::string opt1;
+    std::string instrument_or_currency;
     is >> id >> cmd >> instrument_or_currency;
 
     
@@ -274,7 +274,7 @@ std::string deribit_api::get_history(const std::string &input) {
 
     jsonrpc j;
 
-    // check instrument_or_currency is present in supported currency 
+    // check whether instrument_or_currency is a supported currency 
     const bool is_currency = std::find(SUPPORTED_CURRENCIES.begin(),
                  SUPPORTED_CURRENCIES.end(),
                 instrument_or_currency) != SUPPORTED_CURRENCIES.end();
